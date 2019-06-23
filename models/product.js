@@ -2,12 +2,15 @@ const mongodb = require("mongodb");
 const getDb = require("../util/database").getDb;
 
 class Product {
-  constructor(title, price, description, imageUrl, id) {
+  constructor(title, price, description, imageUrl, id, userId) {
     this.title = title;
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
-    this._id = id;
+    // General convertion to the mongoDB id special format
+    this._id = id ? new mongodb.ObjectId(id) : null;
+    // This is for session login
+    this.userId = userId;
   }
 
   save() {
@@ -16,12 +19,14 @@ class Product {
     if (this._id) {
       dbOp = db
         .collection("products")
-        .updateOne({ _id: new mongodb.ObjectId(this._id) }, { $set: this });
+        .updateOne({ _id: this._id }, { $set: this });
     } else {
       dbOp = db.collection("products").insertOne(this);
     }
     return dbOp
       .then(result => {
+        console.log("Inside product model...");
+
         console.log(result);
       })
       .catch(err => {
@@ -36,6 +41,8 @@ class Product {
       .find()
       .toArray()
       .then(products => {
+        console.log("Inside fetchall()");
+
         console.log(products);
         return products;
       })
@@ -57,6 +64,15 @@ class Product {
       .catch(err => {
         console.log(err);
       });
+  }
+
+  static delete(prodId) {
+    const db = getDb();
+    return db
+      .collection("products")
+      .deleteOne({ _id: new mongodb.ObjectID(prodId) })
+      .then(result => console.log(deleted))
+      .catch(err => console.log(err));
   }
 }
 
