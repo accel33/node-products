@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   // We convert this Id string on the users model
   User.findUser("5d0f8378098eab4854a89c6c")
     .then(user => {
-      req.user = user;
+      req.user = new User(user.name, user.email, user.cart, user._id);
       next();
     })
     .catch(err => console.log(err));
