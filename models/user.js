@@ -17,11 +17,24 @@ class User {
   }
 
   addToCart(product) {
-    // const cartProduct = this.cart.item.findIndex(cp => {
-    //   return cp._id === product._id;
-    // });
+    const cartProductIndex = this.cart.items.findIndex(cp => {
+      // Two equals because _id is not actually an string
+      return cp.productId == product._id;
+    });
+    let newQuantity = 1;
+    const updatedCardItems = [...this.cart.items];
+    if (cartProductIndex >= 0) {
+      newQuantity = this.cart.item[cartProductIndex].quantity + 1;
+      updatedCardItems[cartProductIndex].quantity = newQuantity;
+    } else {
+      // If item dont exist before then I create one
+      updatedCardItems.push({
+        productId: new mongodb.ObjectID(product._id),
+        quantity: newQuantity
+      });
+    }
     const updatedCart = {
-      items: [{ productId: new mongodb.ObjectID(product._id), quantity: 1 }]
+      items: updatedCardItems
     };
     const db = getDb();
     return db

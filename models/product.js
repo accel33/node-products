@@ -42,8 +42,7 @@ class Product {
       .toArray()
       .then(products => {
         console.log("Inside fetchall()");
-
-        console.log(products);
+        // console.log(products);
         return products;
       })
       .catch(err => {
@@ -58,7 +57,8 @@ class Product {
       .find({ _id: mongodb.ObjectId(prodId) })
       .next()
       .then(product => {
-        console.log(product);
+        console.log("find by Id products");
+        // console.log(product);
         return product;
       })
       .catch(err => {
