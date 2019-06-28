@@ -5,8 +5,6 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
 const errorController = require("./controllers/error");
-const mongoConnect = require("./util/database").mongoConnect;
-// mongoConnect is a function, because that is what I am exporting
 const User = require("./models/user");
 
 const app = express();
