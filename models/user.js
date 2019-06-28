@@ -9,10 +9,10 @@ class User {
     this._id = _id;
   }
 
+  // We can use then and catch or just return it
+  // Lets whoever calls it listen for that if there is a need for that
   save() {
     const db = getDb();
-    // We can use then and catch or just return it
-    // Lets whoever calls it listen for that if there is a need for that
     return db.collection("users").insertOne(this);
   }
 
@@ -23,6 +23,7 @@ class User {
     });
     let newQuantity = 1;
     const updatedCardItems = [...this.cart.items];
+    // Inserting the new updated quantity
     if (cartProductIndex >= 0) {
       newQuantity = this.cart.item[cartProductIndex].quantity + 1;
       updatedCardItems[cartProductIndex].quantity = newQuantity;
@@ -44,6 +45,69 @@ class User {
         { $set: { cart: updatedCart } }
       );
   }
+
+  getCart() {
+    const db = getDb();
+    const productIds = this.cart.items.map(i => {
+      return i.productId;
+    });
+    // Becasue I already have all User and Cart data in this model
+    return db
+      .collection("products")
+      .find({ _id: { $in: productIds } })
+      .toArray()
+      .then(products => {
+        return products.map(p => {
+          // Return an object for every product, every product is an object
+          return {
+            ...p,
+            quantity: this.cart.items.find(i => {
+              return i.productId.toString() === p._id.toString();
+            }).quantity
+          };
+        });
+      });
+  }
+
+  deleteCardItem(productId) {
+    const updatedCartItems = this.cart.items.filter(item => {
+      return item.productId.toString() !== productId.toString();
+    });
+    const db = getDb();
+    return db
+      .collection("users")
+      .updateOne(
+        { _id: new mongodb.ObjectID(this._id) },
+        { $set: { cart: { items: updatedCartItems } } }
+      );
+    // This will update the cart to have all items except the ones we delete it
+  }
+
+  addOrder() {
+    const db = getDb();
+    return this.getCart()
+      .then(products => {
+        const order = {
+          items: products,
+          user: {
+            _id: new mongodb.ObjectID(this._id),
+            name: this.name
+          }
+        };
+        return db.collection("orders").insertOne(order);
+      })
+      .then(result => {
+        this.cart = { items: [] };
+        return db
+          .collection("users")
+          .updateOne(
+            { _id: new mongodb.ObjectID(this._id) },
+            { $set: { cart: { items: updatedCartItems } } }
+          );
+      });
+  }
+
+  getOrders() {}
 
   static findUser(userId) {
     const db = getDb();
