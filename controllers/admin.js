@@ -79,7 +79,7 @@ exports.postEditProduct = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
   Product.find()
     // .select("title price -_id") // For Products
-    // .populate("userId", "name") // For USer
+    // .populate("userId", "name") // For User
     .then(products => {
       res.render("admin/products", {
         prods: products,
