@@ -13,7 +13,11 @@ exports.postLogin = (req, res, next) => {
     .then(user => {
       req.session.isLoggedIn = true;
       req.session.user = user;
-      res.redirect("/");
+      // ! The save is used in case redirect is faster then data fetch
+      req.session.save(err => {
+        console.log(err);
+        res.redirect("/");
+      });
     })
     .catch(err => console.log(err));
 };
