@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  name: {
+  email: {
     type: String,
     required: true
   },
-  email: {
+  password: {
     type: String,
     required: true
   },
@@ -86,66 +86,3 @@ userSchema.methods.getCart = function() {
 };
 
 module.exports = mongoose.model("User", userSchema);
-
-//   deleteCardItem(productId) {
-//     const updatedCartItems = this.cart.items.filter(item => {
-//       return item.productId.toString() !== productId.toString();
-//     });
-//     const db = getDb();
-//     return db
-//       .collection("users")
-//       .updateOne(
-//         { _id: new mongodb.ObjectID(this._id) },
-//         { $set: { cart: { items: updatedCartItems } } }
-//       );
-//     // This will update the cart to have all items except the ones we delete it
-//   }
-
-//   addOrder() {
-//     const db = getDb();
-//     return this.getCart()
-//       .then(products => {
-//         const order = {
-//           items: products,
-//           user: {
-//             _id: new mongodb.ObjectID(this._id),
-//             name: this.name
-//           }
-//         };
-//         return db.collection("orders").insertOne(order);
-//       })
-//       .then(result => {
-//         this.cart = { items: [] };
-//         return db
-//           .collection("users")
-//           .updateOne(
-//             { _id: new mongodb.ObjectID(this._id) },
-//             { $set: { cart: { items: updatedCartItems } } }
-//           );
-//       });
-//   }
-
-//   getOrders() {
-//     const db = getDb();
-//     return db
-//       .collection("orders")
-//       .find({ "user._id": new mongodb.ObjectID(this._id) })
-//       .toArray();
-//   }
-
-//   static findUser(userId) {
-//     const db = getDb();
-//     return db
-//       .collection("users")
-//       .findOne({ _id: mongodb.ObjectID(userId) })
-//       .then(user => {
-//         console.log("Inside user.js, after then");
-//         console.log(user);
-
-//         return user;
-//       })
-//       .catch(err => console.log(err));
-//   }
-// }
-
-// module.exports = User;

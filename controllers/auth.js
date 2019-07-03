@@ -8,6 +8,14 @@ exports.getLogin = (req, res, next) => {
   });
 };
 
+exports.getSignup = (req, res, next) => {
+  res.render("auth/signup", {
+    path: "/signup",
+    pageTitle: "Signup",
+    isAuthenticated: false
+  });
+};
+
 exports.postLogin = (req, res, next) => {
   User.findById("5d16f81327e2540214d03706")
     .then(user => {
@@ -18,6 +26,32 @@ exports.postLogin = (req, res, next) => {
         console.log(err);
         res.redirect("/");
       });
+    })
+    .catch(err => console.log(err));
+};
+
+exports.postSignup = (req, res, next) => {
+  // todo > Extract data from incoming request
+  // * We are getting this data from the view
+
+  const email = req.body.email;
+  const password = req.body.password;
+  const confirmPassword = req.body.confirmPassword;
+
+  User.findOne({ email: email })
+    .then(userDoc => {
+      if (userDoc) {
+        return res.redirect("/signup");
+      }
+      const user = new User({
+        email: email,
+        password: password,
+        cart: { items: [] }
+      });
+      return user.save();
+    })
+    .then(result => {
+      res.redirect("/login");
     })
     .catch(err => console.log(err));
 };
