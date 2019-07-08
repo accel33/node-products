@@ -27,8 +27,76 @@ exports.getLogin = (req, res, next) => {
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login",
-    errorMessage: message
+    errorMessage: message,
+    oldInput: {
+      email: "",
+      password: ""
+    },
+    validationError: []
   });
+};
+
+exports.postLogin = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render("auth/login", {
+      path: "/login",
+      pageTitle: "Login",
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password
+      },
+      validationError: errors.array()
+    });
+  }
+
+  User.findOne({ email: email })
+    .then(user => {
+      if (!user) {
+        // ! I just return the message and old input
+        return res.status(422).render("auth/login", {
+          path: "/login",
+          pageTitle: "Login",
+          errorMessage: "Invalid email or password.",
+          oldInput: {
+            email: email,
+            password: password
+          },
+          validationError: []
+        });
+      }
+      bcrypt
+        .compare(password, user.password)
+        .then(doMatch => {
+          if (doMatch) {
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            return req.session.save(err => {
+              console.log(err);
+              res.redirect("/");
+            });
+          }
+          return res.status(422).render("auth/login", {
+            path: "/login",
+            pageTitle: "Login",
+            errorMessage: "Invalid email or password.",
+            oldInput: {
+              email: email,
+              password: password
+            },
+            validationError: []
+          });
+        })
+        .catch(err => {
+          console.log(err);
+          res.redirect("/login");
+        });
+    })
+    .catch(err => console.log(err));
 };
 
 exports.getSignup = (req, res, next) => {
@@ -49,38 +117,6 @@ exports.getSignup = (req, res, next) => {
     },
     validationError: []
   });
-};
-
-exports.postLogin = (req, res, next) => {
-  const email = req.body.email;
-  const password = req.body.password;
-
-  User.findOne({ email: email })
-    .then(user => {
-      if (!user) {
-        req.flash("error", "Invalid email or password.");
-        return res.redirect("/login");
-      }
-      bcrypt
-        .compare(password, user.password)
-        .then(doMatch => {
-          if (doMatch) {
-            req.session.isLoggedIn = true;
-            req.session.user = user;
-            return req.session.save(err => {
-              console.log(err);
-              res.redirect("/");
-            });
-          }
-          req.flash("error", "Invalid email or password.");
-          res.redirect("/login");
-        })
-        .catch(err => {
-          console.log(err);
-          res.redirect("/login");
-        });
-    })
-    .catch(err => console.log(err));
 };
 
 exports.postSignup = (req, res, next) => {
