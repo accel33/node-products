@@ -224,7 +224,6 @@ exports.getNewPassword = (req, res, next) => {
     .then(user => {
       if (!user) {
         console.log("User not found");
-
         return res.redirect("/");
       }
       // todo Error Message
