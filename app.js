@@ -21,6 +21,16 @@ const store = new MongoDBStore({
 });
 const csrfProtection = csrf();
 
+// ! Storage Engine
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  }
+});
+
 app.set("view engine", "ejs");
 app.set("views", "views");
 
@@ -30,7 +40,7 @@ const authRoutes = require("./routes/auth");
 
 // TODO SESSION INITIALIZE
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(multer({ dest: "images" }).single("image")); // ! Image is not random it is on my EJS
+app.use(multer({ storage: fileStorage }).single("image")); // ! Image is not random it is on my EJS
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
