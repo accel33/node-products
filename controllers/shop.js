@@ -162,6 +162,8 @@ exports.getInvoice = (req, res, next) => {
     if (err) {
       return next(err); // todo Return so the other code dont execute
     }
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=" + invoiceName);
     res.send(data);
   });
 };
