@@ -165,15 +165,22 @@ exports.getInvoice = (req, res, next) => {
       }
       const invoiceName = "invoice-" + orderId + ".pdf";
       const invoicePath = path.join("data", "invoices", invoiceName);
-      fs.readFile(invoicePath, (err, data) => {
-        // ! Data in form of a buffer
-        if (err) {
-          return next(err); // todo Return so the other code dont execute
-        }
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader("Content-Disposition", "inline; filename=" + invoiceName);
-        res.send(data);
-      });
+      // ! Here readfile. Read file data into memory, to serve it as a response is not a good  practice
+      // fs.readFile(invoicePath, (err, data) => {
+      // ! Data in form of a buffer
+      //   if (err) {
+      //     return next(err); // todo Return so the other code dont execute
+      //   }
+      //   res.setHeader("Content-Type", "application/pdf");
+      //   res.setHeader("Content-Disposition", "inline; filename=" + invoiceName);
+      //   res.send(data);
+      // });
+      // ! Streaming is the best practice
+      const file = fs.createReadStream(invoicePath);
+      // * Node use this to read the file step by step in diferent chunks
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", "inline; filename=" + invoiceName);
+      file.pipe(res);
     })
     .catch(err => next(err));
 };
