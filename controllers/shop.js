@@ -77,7 +77,7 @@ exports.postCart = (req, res, next) => {
       return req.user.addToCart(product);
     })
     .then(result => {
-      console.log("This is the result in addToCart Controller");
+      console.log("This is the result in postCart Controller");
       console.log(result.cart);
       res.redirect("/cart");
     })
@@ -94,6 +94,22 @@ exports.postCartDeleteProduct = (req, res, next) => {
     .removeCartItems(prodId)
     .then(result => {
       res.redirect("/cart");
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
+
+exports.getOrders = (req, res, next) => {
+  Order.find({ "user.userId": req.user._id })
+    .then(orders => {
+      res.render("shop/orders", {
+        path: "/orders",
+        pageTitle: "Your Orders",
+        orders: orders
+      });
     })
     .catch(err => {
       const error = new Error(err);
@@ -123,23 +139,9 @@ exports.postOrder = (req, res, next) => {
       return req.user.clearCart();
     })
     .then(() => {
-      res.redirect("/orders");
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
-    });
-};
+      console.log("This is the postOrder controller");
 
-exports.getOrders = (req, res, next) => {
-  Order.find({ "user.userId": req.user._id })
-    .then(orders => {
-      res.render("shop/orders", {
-        path: "/orders",
-        pageTitle: "Your Orders",
-        orders: orders
-      });
+      res.redirect("/orders");
     })
     .catch(err => {
       const error = new Error(err);
