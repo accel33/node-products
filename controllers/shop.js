@@ -4,6 +4,8 @@ const PDFDocument = require("pdfkit");
 const Product = require("../models/product");
 const Order = require("../models/order");
 
+const ITEMS_PER_PAGE = 2;
+
 exports.getProducts = (req, res, next) => {
   Product.find()
     .then(products => {
@@ -39,7 +41,14 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.find()
+  // todo We need to retrieve the information of in which page we are, so which data from which page needs to be displayed
+  const page = req.query.page;
+  // * We need to define how many items should be displayed per page, and that is something I will store as a global constant
+  // If I'm on page one, I want to fetch items 1, 2. If I'm on page two, I want to fetch items 3, 4.
+  Product.find() //! We want to control the amount of data we recieve from the database, with skip
+    .skip((page - 1) * ITEMS_PER_PAGE) //! We can add this on a cursor, and find() does return a cursor
+    //todo I just don't wanna skip some items, but I also want to limit the amounts of items I retrieve. So I don't only skip items, but for the current page I only fetch as many items as I want to display. for thie we use limit()
+    .limit(ITEMS_PER_PAGE)
     .then(products => {
       res.render("shop/index", {
         prods: products,
