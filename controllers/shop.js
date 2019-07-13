@@ -171,7 +171,21 @@ exports.getInvoice = (req, res, next) => {
       res.setHeader("Content-Disposition", "inline; filename=" + invoiceName);
       pdfDoc.pipe(fs.createWriteStream(invoicePath));
       pdfDoc.pipe(res);
-      pdfDoc.text("Hello World");
+      pdfDoc.fontSize(26).text("Invoice", {
+        underline: true
+      });
+      pdfDoc.text("--------------------");
+      pdfDoc.fontSize(18);
+      let totalPrice = 0;
+      order.products.forEach(prod => {
+        totalPrice += prod.quantity * prod.product.price;
+        pdfDoc.text(
+          `${prod.product.title} - ${prod.quantity} x $${prod.product.price}`
+        );
+      });
+      pdfDoc.text("--------------------");
+
+      pdfDoc.fontSize(22).text("Total Price: $" + totalPrice);
       pdfDoc.end();
       // ! Here readfile. Read file data into memory, to serve it as a response is not a good  practice
       // fs.readFile(invoicePath, (err, data) => {
