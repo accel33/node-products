@@ -7,19 +7,35 @@ const Order = require("../models/order");
 const ITEMS_PER_PAGE = 1;
 
 exports.getProducts = (req, res, next) => {
+  const page = +req.query.page || 1; // If first value is not true, then we throw 1
+  let totalItems;
+  // This will just retrieve a number of products
   Product.find()
-    .then(products => {
-      console.log(products);
-      res.render("shop/product-list", {
-        prods: products,
-        pageTitle: "All Products",
-        path: "/products"
-      });
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
+    .countDocuments()
+    .then(numProducts => {
+      totalItems = numProducts;
+      return Product.find() //! We want to control the amount of data we recieve from the database, with skip
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE)
+        .then(products => {
+          res.render("shop/product-list", {
+            prods: products,
+            pageTitle: "Products",
+            path: "/products",
+            currentPage: page,
+            //! If we have page 4, i.e. 2items * 4pages = 8, 8 < 10items, There is a next page
+            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+            hasPreviousPage: page > 1, //! If we are in page 1, then there is no previos page
+            nextPage: page + 1,
+            previousPage: page - 1,
+            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE) //! 11total / 2 = 5.5, Max = 6
+          });
+        })
+        .catch(err => {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        });
     });
 };
 
@@ -43,8 +59,6 @@ exports.getProduct = (req, res, next) => {
 exports.getIndex = (req, res, next) => {
   // todo We need to retrieve the information of in which page we are, so which data from which page needs to be displayed
   const page = +req.query.page || 1; // If first value is not true, then we throw 1
-  console.log(page);
-
   let totalItems;
   // This will just retrieve a number of products
   Product.find()
