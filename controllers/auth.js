@@ -6,8 +6,6 @@ const { validationResult } = require("express-validator/check");
 
 const User = require("../models/user");
 
-require("dotenv").config();
-
 // todo sendgrid function will return a configuration that nodemailer can use to use sendgrid
 const transporter = nodemailer.createTransport(
   sendgridTransport({
